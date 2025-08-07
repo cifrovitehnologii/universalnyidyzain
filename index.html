@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест: Універсальний дизайн цифрових продуктів, його принципи та засоби забезпечення</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .quiz-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .option-btn {
+            transition: all 0.3s ease;
+            border: 2px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .option-btn:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+        
+        .option-btn.correct {
+            background-color: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+        
+        .option-btn.incorrect {
+            background-color: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+        
+        .option-btn.selected {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            transition: width 0.5s ease;
+        }
+        
+        .result-icon {
+            font-size: 5rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .feedback-animation {
+            animation: fadeInOut 1.5s ease;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            20% { opacity: 1; transform: translateY(0); }
+            80% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f59e0b;
+            border-radius: 50%;
+            animation: confetti-fall 3s ease-in-out infinite;
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="font-montserrat bg-gradient-to-br from-blue-500 to-blue-800 min-h-screen flex items-center justify-center p-4">
+    <div class="max-w-2xl w-full">
+        <!-- Start Screen -->
+        <div id="start-screen" class="quiz-container p-8 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Тест: "Універсальний дизайн цифрових продуктів, його принципи та засоби забезпечення"</h1>
+            <p class="text-gray-600 mb-8">Перевірте свої знання з теми "Універсальний дизайн цифрових продуктів, його принципи та засоби забезпечення"</p>
+            <button id="start-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-8 rounded-lg transition-colors">
+                Почати тест
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="quiz-container p-6 md:p-8 hidden">
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                    <span id="question-number" class="text-sm font-medium text-gray-500">Питання 1/10</span>
+                    <span id="timer" class="text-sm font-medium text-gray-500">00:00</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="progress-bar" class="progress-bar bg-blue-600 rounded-full" style="width: 10%"></div>
+                </div>
+            </div>
+            
+            <div id="question-container" class="mb-6">
+                <h2 id="question-text" class="text-xl md:text-2xl font-semibold text-gray-800 mb-6"></h2>
+                <div id="options-container" class="space-y-3"></div>
+            </div>
+            
+            <div id="feedback-container" class="hidden mb-6 p-4 rounded-lg"></div>
+            
+            <div class="flex justify-between">
+                <button id="prev-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Назад
+                </button>
+                <button id="next-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    Далі
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="quiz-container p-8 text-center hidden">
+            <div id="confetti-container" class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none"></div>
+            
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Результати тесту</h2>
+            
+            <div class="mb-6">
+                <div id="result-icon" class="text-center mb-4"></div>
+                <p class="text-xl font-bold" id="score-text"></p>
+                <p class="text-gray-600 mb-4" id="time-taken"></p>
+            </div>
+            
+            <div class="mb-8">
+                <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                    <div id="score-bar" class="bg-blue-600 rounded-full h-4"></div>
+                </div>
+                <div class="flex justify-between text-sm text-gray-600">
+                    <span>0%</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                </div>
+            </div>
+            
+            <div class="space-y-4 mb-8">
+                <button id="show-answers-btn" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-2 px-4 rounded-lg transition-colors">
+                    Переглянути відповіді
+                </button>
+                <button id="restart-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                    Пройти тест знову
+                </button>
+            </div>
+        </div>
+
+        <!-- Review Answers Screen -->
+        <div id="review-screen" class="quiz-container p-6 md:p-8 hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Перегляд відповідей</h2>
+            
+            <div id="review-container" class="space-y-8 mb-6"></div>
+            
+            <button id="back-to-results-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
+                Повернутися до результатів
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data
+        const quizData = [
+            {
+                question: "Принцип «Рівність у використанні» означає",
+                options: [
+                    "Окремий інтерфейс для людей з інвалідністю",
+                    "Забезпечення доступності для всіх, без окремих версій",
+                    "Використання лише голосового інтерфейсу",
+                    "Доступність лише на смартфонах"
+                ],
+                correctAnswer: 1,
+                explanation: "Один і той самий цифровий продукт має бути доступним для всіх користувачів."
+            },
+            {
+                question: "Гнучкість у використанні дає змогу",
+                options: [
+                    "Користувачу змінювати шрифти або контрастність",
+                    "Стороннім додавати рекламу",
+                    "Блокувати доступ користувача до інтерфейсу",
+                    "Вимкнути навігаційну мапу"
+                ],
+                correctAnswer: 0,
+                explanation: "Адаптація інтерфейсу під власні потреби — ключова властивість UX."
+            },
+            {
+                question: "Принцип «Простота і зрозумілість» означає",
+                options: [
+                    "Використання лише тексту",
+                    "Мінімум кодування",
+                    "Інтуїтивно зрозумілий інтерфейс із чіткою структурою",
+                    "Повна автоматизація без усяких пояснень"
+                ],
+                correctAnswer: 2,
+                explanation: "UX-дизайн має бути доступним навіть для непідготовленого користувача"
+            },
+            {
+                question: "Для принципу «Відчутність інформації» важливо",
+                options: [
+                    "Або текст, або звук",
+                    "Виключно графіка",
+                    "Подавати дані у текстовому, звуковому та візуальному форматах",
+                    "Писати інструкцію для водіїв"
+                ],
+                correctAnswer: 2,
+                explanation: "Для цього принципу закладено декілька каналів подачі інформації для різних потреб."
+            },
+            {
+                question: "Принцип «Толерантність до помилок» забезпечує",
+                options: [
+                    "Ніхто не може втрутитися у роботу",
+                    "Простий спосіб скасувати або виправити незавершену дію",
+                    "Автоматичне перезавантаження програми",
+                    "Заборону неправильних введень"
+                ],
+                correctAnswer: 1,
+                explanation: "Продукт має допомагати користувачу виправити помилку без стресу."
+            },
+            {
+                question: "Принцип «Мінімальні фізичні зусилля» означає",
+                options: [
+                    "Велика кнопка у застосунку, зручною для натискання великим пальцем",
+                    "Обов’язково вибір голосом",
+                    "Тільки сенсори руху",
+                    "Звичайний інтерфейс"
+                ],
+                correctAnswer: 0,
+                explanation: "Інтерфейс має бути також доступним при обмежених моторних здібностях."
+            },
+            {
+                question: "Коли інтерфейс транспортного додатку має основні емоційні кнопки «SOS», він відповідає принципу",
+                options: [
+                    "Простоти",
+                    "Відповідності",
+                    "Зручного розташування елементів",
+                    "Адаптивності"
+                ],
+                correctAnswer: 2,
+                explanation: "Розміщення елементів має бути логічним і зручним для користування."
+            },
+            {
+                question: "У транспортному додатку з голосовою підказкою та великим шрифтом реалізовано принцип",
+                options: [
+                    "Локалізації",
+                    "Відчутності інформації",
+                    "Гнучкості",
+                    "Зрозумілості"
+                ],
+                correctAnswer: 1,
+                explanation: "Інформація представлена у голосовому та у візуальному форматі."
+            },
+            {
+                question: "Мобільний додаток для відстеження автобусів із можливістю збільшити шрифт і змінити колірний контраст демонструє принцип",
+                options: [
+                    "Толерантності до помилок",
+                    "Гнучкості",
+                    "Рівності",
+                    "Інтуїтивності"
+                ],
+                correctAnswer: 1,
+                explanation: "Користувачі можуть адаптувати вигляд додатку під свої потреби."
+            },
+            {
+                question: "Надання лише текстової інформації (без голосових або графічних елементів) відповідає принципу «відчутності інформації»",
+                options: [
+                    "Так",
+                    "Ні"
+                ],
+                correctAnswer: 1,
+                explanation: "Цей принцип вимагає використання різних форматів інформації."
+            }
+        ];
+
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const reviewScreen = document.getElementById('review-screen');
+        
+        const questionNumber = document.getElementById('question-number');
+        const progressBar = document.getElementById('progress-bar');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackContainer = document.getElementById('feedback-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        const scoreText = document.getElementById('score-text');
+        const scoreBar = document.getElementById('score-bar');
+        const timeTaken = document.getElementById('time-taken');
+        const resultIcon = document.getElementById('result-icon');
+        
+        const reviewContainer = document.getElementById('review-container');
+
+        // Quiz state
+        let currentQuestion = 0;
+        let score = 0;
+        let userAnswers = Array(quizData.length).fill(null);
+        let startTime;
+        let timerInterval;
+        let timerDisplay = document.getElementById('timer');
+
+        // Event listeners
+        document.getElementById('start-btn').addEventListener('click', startQuiz);
+        prevBtn.addEventListener('click', showPreviousQuestion);
+        nextBtn.addEventListener('click', handleNextButton);
+        document.getElementById('show-answers-btn').addEventListener('click', showReviewScreen);
+        document.getElementById('restart-btn').addEventListener('click', restartQuiz);
+        document.getElementById('back-to-results-btn').addEventListener('click', () => {
+            reviewScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+        });
+
+        // Functions
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            startTime = new Date();
+            startTimer();
+            showQuestion(currentQuestion);
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            const now = new Date();
+            const timeDiff = Math.floor((now - startTime) / 1000);
+            const minutes = Math.floor(timeDiff / 60).toString().padStart(2, '0');
+            const seconds = (timeDiff % 60).toString().padStart(2, '0');
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function showQuestion(index) {
+            const question = quizData[index];
+            
+            questionNumber.textContent = `Питання ${index + 1}/${quizData.length}`;
+            progressBar.style.width = `${((index + 1) / quizData.length) * 100}%`;
+            questionText.textContent = question.question;
+            
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, i) => {
+                const button = document.createElement('button');
+                button.className = `option-btn w-full text-left p-4 rounded-lg flex items-center ${userAnswers[index] === i ? 'selected' : ''}`;
+                
+                const optionLetter = String.fromCharCode(97 + i); // a, b, c, d
+                
+                button.innerHTML = `
+                    <span class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 mr-3 font-medium">
+                        ${optionLetter}
+                    </span>
+                    <span>${option}</span>
+                `;
+                
+                button.addEventListener('click', () => selectOption(i));
+                optionsContainer.appendChild(button);
+            });
+            
+            prevBtn.disabled = index === 0;
+            
+            if (index === quizData.length - 1) {
+                nextBtn.textContent = 'Завершити';
+            } else {
+                nextBtn.textContent = 'Далі';
+            }
+            
+            feedbackContainer.classList.add('hidden');
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestion] = optionIndex;
+            
+            // Update UI to show selected option
+            document.querySelectorAll('.option-btn').forEach((btn, i) => {
+                if (i === optionIndex) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        function showPreviousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion(currentQuestion);
+            }
+        }
+
+        function handleNextButton() {
+            // If this is the last question and user clicked "Завершити"
+            if (currentQuestion === quizData.length - 1 && nextBtn.textContent === 'Завершити') {
+                finishQuiz();
+                return;
+            }
+            
+            // If user hasn't selected an answer yet
+            if (userAnswers[currentQuestion] === null) {
+                showFeedback('Будь ласка, виберіть відповідь перед тим, як продовжити', 'warning');
+                return;
+            }
+            
+            // Show feedback for current question
+            const isCorrect = userAnswers[currentQuestion] === quizData[currentQuestion].correctAnswer;
+            showAnswerFeedback(isCorrect);
+            
+            // Wait a moment to show feedback before moving to next question
+            setTimeout(() => {
+                if (currentQuestion < quizData.length - 1) {
+                    currentQuestion++;
+                    showQuestion(currentQuestion);
+                }
+            }, 1500);
+        }
+
+        function showFeedback(message, type) {
+            feedbackContainer.textContent = message;
+            feedbackContainer.className = `mb-6 p-4 rounded-lg feedback-animation ${
+                type === 'success' ? 'bg-green-100 text-green-800' : 
+                type === 'error' ? 'bg-red-100 text-red-800' : 
+                'bg-yellow-100 text-yellow-800'
+            }`;
+            feedbackContainer.classList.remove('hidden');
+            
+            setTimeout(() => {
+                feedbackContainer.classList.add('hidden');
+            }, 3000);
+        }
+
+        function showAnswerFeedback(isCorrect) {
+            const options = document.querySelectorAll('.option-btn');
+            const correctIndex = quizData[currentQuestion].correctAnswer;
+            const userIndex = userAnswers[currentQuestion];
+            
+            options.forEach((option, i) => {
+                option.disabled = true;
+                
+                if (i === correctIndex) {
+                    option.classList.add('correct');
+                } else if (i === userIndex && userIndex !== correctIndex) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (isCorrect) {
+                showFeedback('Правильно! 👍', 'success');
+            } else {
+                showFeedback('Неправильно. Правильна відповідь виділена зеленим.', 'error');
+            }
+        }
+
+        function finishQuiz() {
+            stopTimer();
+            calculateResults();
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            
+            if (score / quizData.length >= 0.7) {
+                createConfetti();
+            }
+        }
+
+        function calculateResults() {
+            // Reset score and recalculate all answers
+            score = 0;
+            quizData.forEach((question, index) => {
+                if (userAnswers[index] === question.correctAnswer) {
+                    score++;
+                }
+            });
+
+            const percentage = (score / quizData.length) * 100;
+            scoreText.textContent = `Ваш результат: ${score} з ${quizData.length} (${percentage.toFixed(0)}%)`;
+            scoreBar.style.width = `${percentage}%`;
+            
+            const endTime = new Date();
+            const timeDiffSeconds = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(timeDiffSeconds / 60);
+            const seconds = timeDiffSeconds % 60;
+            timeTaken.textContent = `Час проходження: ${minutes} хв ${seconds} сек`;
+            
+            // Set result icon based on score
+            if (percentage >= 90) {
+                resultIcon.innerHTML = '<span class="result-icon text-yellow-500">🏆</span>';
+                scoreBar.classList.add('bg-green-500');
+            } else if (percentage >= 70) {
+                resultIcon.innerHTML = '<span class="result-icon text-green-500">👍</span>';
+                scoreBar.classList.add('bg-green-500');
+            } else if (percentage >= 50) {
+                resultIcon.innerHTML = '<span class="result-icon text-blue-500">🤔</span>';
+                scoreBar.classList.add('bg-blue-500');
+            } else {
+                resultIcon.innerHTML = '<span class="result-icon text-red-500">📚</span>';
+                scoreBar.classList.add('bg-red-500');
+            }
+        }
+
+        function showReviewScreen() {
+            resultsScreen.classList.add('hidden');
+            reviewScreen.classList.remove('hidden');
+            
+            reviewContainer.innerHTML = '';
+            quizData.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                const correctAnswer = question.correctAnswer;
+                const isCorrect = userAnswer === correctAnswer;
+                
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'p-5 border rounded-lg';
+                
+                // Question header with number and result icon
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'flex justify-between items-center mb-3';
+                headerDiv.innerHTML = `
+                    <h3 class="font-semibold text-gray-700">Питання ${index + 1}</h3>
+                    <span class="text-xl">${isCorrect ? '✅' : '❌'}</span>
+                `;
+                
+                // Question text
+                const questionTextDiv = document.createElement('div');
+                questionTextDiv.className = 'mb-4 text-lg font-medium';
+                questionTextDiv.textContent = question.question;
+                
+                // Options
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'space-y-2 mb-4';
+                
+                question.options.forEach((option, i) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = `p-3 rounded-lg ${
+                        i === correctAnswer ? 'bg-green-100 border-green-300 border' : 
+                        i === userAnswer && userAnswer !== correctAnswer ? 'bg-red-100 border-red-300 border' : 
+                        'bg-gray-50'
+                    }`;
+                    
+                    const optionLetter = String.fromCharCode(97 + i); // a, b, c, d
+                    
+                    optionDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <span class="w-6 h-6 flex items-center justify-center rounded-full ${
+                                i === correctAnswer ? 'bg-green-500 text-white' : 
+                                i === userAnswer && userAnswer !== correctAnswer ? 'bg-red-500 text-white' : 
+                                'bg-gray-200 text-gray-700'
+                            } mr-2 text-sm font-medium">
+                                ${optionLetter}
+                            </span>
+                            <span>${option}</span>
+                        </div>
+                    `;
+                    
+                    optionsDiv.appendChild(optionDiv);
+                });
+                
+                // Explanation
+                const explanationDiv = document.createElement('div');
+                explanationDiv.className = 'mt-4 p-3 bg-blue-50 rounded-lg text-sm text-gray-700';
+                explanationDiv.innerHTML = `
+                    <p class="font-medium text-blue-800 mb-1">Пояснення:</p>
+                    <p>${question.explanation}</p>
+                `;
+                
+                // Append all elements
+                questionDiv.appendChild(headerDiv);
+                questionDiv.appendChild(questionTextDiv);
+                questionDiv.appendChild(optionsDiv);
+                questionDiv.appendChild(explanationDiv);
+                
+                reviewContainer.appendChild(questionDiv);
+            });
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userAnswers = Array(quizData.length).fill(null);
+            
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            
+            startTime = new Date();
+            startTimer();
+            showQuestion(currentQuestion);
+        }
+
+        function createConfetti() {
+            const confettiContainer = document.getElementById('confetti-container');
+            const colors = ['#f59e0b', '#3b82f6', '#10b981', '#ef4444', '#8b5cf6'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDuration = `${3 + Math.random() * 2}s`;
+                confetti.style.animationDelay = `${Math.random() * 3}s`;
+                
+                confettiContainer.appendChild(confetti);
+            }
+            
+            setTimeout(() => {
+                confettiContainer.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
